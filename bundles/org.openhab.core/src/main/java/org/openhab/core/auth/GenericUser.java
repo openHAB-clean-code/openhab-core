@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  *
  * @author Yannick Schaus - initial contribution
  *
+ *
  */
 @NonNullByDefault
 public class GenericUser implements User {
