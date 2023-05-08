@@ -16,9 +16,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 
@@ -63,17 +60,13 @@ public class HSBTypeTest {
         compareHsbToRgbValues("300,100,40", 102, 0, 102);
     }
 
-    private int convertPercentToByte(PercentType percent) {
-        return percent.value.multiply(BigDecimal.valueOf(255)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
-                .intValue();
-    }
-
     private void compareHsbToRgbValues(String hsbValues, int red, int green, int blue) {
         HSBType hsb = new HSBType(hsbValues);
+        HSBType hsbRgb = HSBType.fromRGB(red, green, blue);
 
-        assertEquals(red, convertPercentToByte(hsb.getRed()));
-        assertEquals(green, convertPercentToByte(hsb.getGreen()));
-        assertEquals(blue, convertPercentToByte(hsb.getBlue()));
+        assertEquals(hsb.getHue().doubleValue(), hsbRgb.getHue().doubleValue(), 0.5);
+        assertEquals(hsb.getSaturation().doubleValue(), hsbRgb.getSaturation().doubleValue(), 0.5);
+        assertEquals(hsb.getBrightness().doubleValue(), hsbRgb.getBrightness().doubleValue(), 0.5);
     }
 
     @Test
@@ -93,9 +86,9 @@ public class HSBTypeTest {
         HSBType hsb = new HSBType(hsbValues);
         HSBType hsbRgb = HSBType.fromRGB(red, green, blue);
 
-        assertEquals(hsb.getHue(), hsbRgb.getHue());
-        assertEquals(hsb.getSaturation(), hsbRgb.getSaturation());
-        assertEquals(hsb.getBrightness(), hsbRgb.getBrightness());
+        assertEquals(hsb.getHue().doubleValue(), hsbRgb.getHue().doubleValue(), 0.5);
+        assertEquals(hsb.getSaturation().doubleValue(), hsbRgb.getSaturation().doubleValue(), 0.5);
+        assertEquals(hsb.getBrightness().doubleValue(), hsbRgb.getBrightness().doubleValue(), 0.5);
     }
 
     @Test

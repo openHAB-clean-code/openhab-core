@@ -52,8 +52,6 @@ import org.slf4j.LoggerFactory;
 @Component(immediate = true)
 public class PersistenceExtensions {
 
-    private static final BigDecimal BIG_DECIMAL_TWO = BigDecimal.valueOf(2);
-
     private static PersistenceServiceRegistry registry;
 
     @Activate
@@ -824,7 +822,8 @@ public class PersistenceExtensions {
 
         if (firstTimestamp != null) {
             BigDecimal totalDuration = BigDecimal.valueOf(Duration.between(firstTimestamp, endTime).toMillis());
-            return new DecimalType(sum.divide(totalDuration, MathContext.DECIMAL64));
+            return totalDuration.signum() == 0 ? null
+                    : new DecimalType(sum.divide(totalDuration, MathContext.DECIMAL64));
         }
 
         return null;
@@ -1131,8 +1130,8 @@ public class PersistenceExtensions {
      */
     public static long countBetween(Item item, ZonedDateTime begin, @Nullable ZonedDateTime end, String serviceId) {
         Iterable<HistoricItem> historicItems = getAllStatesBetween(item, begin, end, serviceId);
-        if (historicItems instanceof Collection<?>) {
-            return ((Collection<?>) historicItems).size();
+        if (historicItems instanceof Collection<?> collection) {
+            return collection.size();
         } else {
             return StreamSupport.stream(historicItems.spliterator(), false).count();
         }
@@ -1209,15 +1208,10 @@ public class PersistenceExtensions {
     }
 
     private static @Nullable PersistenceService getService(String serviceId) {
-        PersistenceService service = null;
         if (registry != null) {
-            if (serviceId != null) {
-                service = registry.get(serviceId);
-            } else {
-                service = registry.getDefault();
-            }
+            return serviceId != null ? registry.get(serviceId) : registry.getDefault();
         }
-        return service;
+        return null;
     }
 
     private static @Nullable String getDefaultServiceId() {
@@ -1239,8 +1233,7 @@ public class PersistenceExtensions {
     private static Iterable<HistoricItem> getAllStatesBetween(Item item, ZonedDateTime begin,
             @Nullable ZonedDateTime end, String serviceId) {
         PersistenceService service = getService(serviceId);
-        if (service instanceof QueryablePersistenceService) {
-            QueryablePersistenceService qService = (QueryablePersistenceService) service;
+        if (service instanceof QueryablePersistenceService qService) {
             FilterCriteria filter = new FilterCriteria();
             filter.setBeginDate(begin);
             if (end != null) {
